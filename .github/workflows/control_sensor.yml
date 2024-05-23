@@ -1,0 +1,29 @@
+name: Control Sensor
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'deactivate'
+        type: choice
+        options:
+          - activate
+          - deactivate
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send request to Arduino ESP8266 WiFi Module
+      env:
+        DEVICE_IP: ${{ secrets.DEVICE_IP }}
+      run: |
+        ACTION=${{ github.event.inputs.action }}
+        if [ "$ACTION" == "activate" ]; THEN
+          curl -X POST http://$DEVICE_IP/activate
+        elif [ "$ACTION" == "deactivate" ]; then
+          curl -X POST http://$DEVICE_IP/deactivate
+        fi

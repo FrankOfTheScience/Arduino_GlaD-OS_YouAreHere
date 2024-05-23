@@ -2,17 +2,18 @@
 #include <ESP8266WebServer.h>
 #include <Ticker.h>
 
-const char* ssid = "WIFI_SSID";
-const char* password = "WIFI_PASSWORD";
-const char* iftttWebhookURL = "IFTTT_WEBHOOK_URL ";
-const int sensorPin = 2;
+const char* zapierWebhookURL = "ZAPIER_WEBHOOK_URL ";
+const int sensorPin;
 ESP8266WebServer server(80);
 Ticker timer;
 bool sensorActive = false;
 
 void setup(){
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  WiFi.begin(getenv("WIFI_SSID"), getenv("WIFI_PASSWORD"));
+
+  String sensorPinStr = getenv("SENSOR_PIN");
+  sensorPin = sensorPinStr.toInt();
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -36,7 +37,7 @@ void loop(){
 
   if (sensorActive) {
       if (digitalRead(sensorPin) == HIGH){
-        sendIFTTTEvent();
+        sendZapierEvent();
         handleDeactivate();
         delay(3600000);
         handleActivate();
@@ -60,16 +61,19 @@ void handleDeactivate() {
 }
 
 
-void sendIFTTTEvent() {
+void sendZapierEvent() {
   HTTPClient http;
   
-  http.begin(iftttWebhookURL);
+  http.begin(getenv("ZAPIER_WEBHOOK_URL"));
   http.addHeader("Content-Type", "application/json");
   
-  int httpResponseCode = http.POST("{\"value1\":\"Alert! Motion detected\"}");
+  String timestamp = String(systime());
+  String payload = "{\"value1\":\"Alert! Motion detected\", \"timestamp\":\"" + timestamp + "\"}";
+  
+  int httpResponseCode = http.POST(payload);
   
   if (httpResponseCode > 0) {
-    Serial.print("IFTTT request sent, response code: ");
+    Serial.print("Zapier request sent, response code: ");
     Serial.println(httpResponseCode);
   }
   else {

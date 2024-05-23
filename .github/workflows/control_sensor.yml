@@ -22,7 +22,7 @@ jobs:
         DEVICE_IP: ${{ secrets.DEVICE_IP }}
       run: |
         ACTION=${{ github.event.inputs.action }}
-        if [ "$ACTION" == "activate" ]; THEN
+        if [ "$ACTION" == "activate" ]; then
           curl -X POST http://$DEVICE_IP/activate
         elif [ "$ACTION" == "deactivate" ]; then
           curl -X POST http://$DEVICE_IP/deactivate

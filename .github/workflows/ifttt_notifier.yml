@@ -1,0 +1,24 @@
+name: IFTTT Notifier
+
+on:
+  workflow_dispatch:
+    inputs:
+      event:
+        description: 'Event to trigger'
+        required: true
+        default: 'alert'
+        type: choice
+        options:
+          - alert
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send request to IFTTT Webhook
+      env:
+        IFTTT_WEBHOOK_URL: ${{ secrets.IFTTT_WEBHOOK_URL }}
+      run: |
+        EVENT=${{ github.event.inputs.event }}
+        curl -X POST "Content-Type: application/json" -d '{"value1": "Sensor triggered"}' $IFTTT_WEBHOOK_URL

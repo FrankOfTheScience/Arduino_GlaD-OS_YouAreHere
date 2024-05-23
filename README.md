@@ -35,7 +35,7 @@ The request cabled to be sent to Zapier is defined here:
 | Key | Description | Type |
 | -- | -- | -- |
 | value1 | Static message to be recognized by the Webhook | string |
-| timestamp | Dynamic timestamp formatted as: "**YYYY-mm-DD HH:MM:ss**" | date |
+| timestamp | Dynamic timestamp formatted as: "**YYYY-mm-DD HH:MM:ss**" | dateTime |
 
 ```json
 {
@@ -48,18 +48,18 @@ The request cabled to be sent to Zapier is defined here:
 This system is flexible and can be customized according to individual needs by configuring custom Webhooks on [Zapier](https://zapier.com/), or you can also use other providers like [IFTTT](https://ifttt.com/).
 
 ### Environment Variables and Secrets
-To succesfully make the .ino code works you might need to change the Repository Variables and create some Codespaces secrets.
+To succesfully make the `.ino` code works you might need to change the Repository Variables and create some Codespaces secrets.
 #### Repository Variables
 | Key | Value | Description |
 | -- | -- | -- |
 | SENSOR_PIN | 2 | The pin where the IR sensor is cabled to |
 | TIMEZONE_STRING | Europe/Rome | The timezone where to get systime |
 #### Codespaces Secrets
-You need to create those since are secrets and not passed through forks. Keys are the AS-IS hardcoded in .ino file, if you'll change them you need to modify the code.
+You need to create those since are secrets and not passed through forks. Keys are the AS-IS hardcoded in `.ino` file, if you'll change them you need to modify the code.
 | Key | Value | Description |
 | -- | -- | -- |
-| WIFI_IP | N.A. | The IP of your ESP8266 module |
-| WIFI_PASSWORD | N.A. | Your WiFi password |
-| WIFI_SSID | N.A. | Your WiFi net name |
-| ZAPIER_WEBHOOK_URL | N.A. | When creating a webhook trigger on Zapier they give you a custom url to trigger the automation via HTTP request |
+| WIFI_IP | YourCustomValue | The IP of your ESP8266 module |
+| WIFI_PASSWORD | YourCustomValue | Your WiFi password |
+| WIFI_SSID | YourCustomValue | Your WiFi net name |
+| ZAPIER_WEBHOOK_URL | YourCustomValue | When creating a webhook trigger on Zapier they give you a custom url to trigger the automation via HTTP request |
 

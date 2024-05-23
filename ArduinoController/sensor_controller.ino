@@ -1,12 +1,19 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <Ticker.h>
+#include <WiFiUdp.h> 
+#include <TimeLib.h> 
+#include <Timezone.h>
 
-const char* zapierWebhookURL = "ZAPIER_WEBHOOK_URL ";
 const int sensorPin;
 ESP8266WebServer server(80);
-Ticker timer;
+WiFiUDP udp;
+TimeLib t;
 bool sensorActive = false;
+String tzString;
+
+const char* ntpServer1 = "pool.ntp.org";
+const char* ntpServer2 = "time.nist.gov";
+const char* ntpServer3 = "europe.pool.ntp.org";
 
 void setup(){
   Serial.begin(115200);
@@ -23,6 +30,23 @@ void setup(){
   Serial.println("Connected to WiFi");
   pinMode(sensorPin, OUTPUT);
   digitalWrite(sensorPin, LOW);
+
+  udp.begin(ntpPort);
+  setSyncInterval(10000); 
+
+  tzString = getenv("TIMEZONE_STRING");
+
+  if (tzString.isEmpty()) {
+    Serial.println("WARNING: Timezone string not found in environment variable!");
+    setTZ("UTC");
+  } 
+  else {
+    setTZ(tzString.c_str());
+  }
+  
+  WiFi.hostByName(ntpServer1, ntpUDP); 
+  WiFi.hostByName(ntpServer2, ntpUDP); 
+  WiFi.hostByName(ntpServer3, ntpUDP);
 
   server.on("/", handleRoot());
   server.on("/activate", activateRoot());
@@ -45,21 +69,31 @@ void loop(){
 }
 
 void handleRoot(){
-  server.send(200, "text/plain", "Arduino with ESP8266 module is up and running.";
+  String message = "Arduino with ESP8266 module is up and running. Current time: " + getCurrentTime();
+  server.send(200, "text/plain", message);
 }
 
 void handleActivate() {
   digitalWrite(sensorPin, HIGH);
   sensorActive = true;
-  server.send(200, "text/plain", "Sensor activated");
+
+  String message = "Arduino infrared sensor activated. Current time: " + getCurrentTime();
+  server.send(200, "text/plain", message);
 }
 
 void handleDeactivate() {
   digitalWrite(sensorPin, LOW);
   sensorActive = false;
-  server.send(200, "text/plain", "Sensor deactivated");
+
+  String message = "Arduino infrared sensor deactivated. Current time: " + getCurrentTime();
+  server.send(200, "text/plain", message);
 }
 
+String getCurrentTime(){
+  update();
+  String formattedTime = t.strftime("%Y-%m-%d %H:%M:%S"); 
+  return formattedTime;
+}
 
 void sendZapierEvent() {
   HTTPClient http;
@@ -67,17 +101,15 @@ void sendZapierEvent() {
   http.begin(getenv("ZAPIER_WEBHOOK_URL"));
   http.addHeader("Content-Type", "application/json");
   
-  String timestamp = String(systime());
-  String payload = "{\"value1\":\"Alert! Motion detected\", \"timestamp\":\"" + timestamp + "\"}";
-  
+  String payload = "{\"value1\":\"Alert! Motion detected\", \"timestamp\":\"" + getCurrentTime() + "\"}";
   int httpResponseCode = http.POST(payload);
   
   if (httpResponseCode > 0) {
-    Serial.print("Zapier request sent, response code: ");
+    Serial.print("Zapier request sent at " + getCurrentTime() + ", response code: ");
     Serial.println(httpResponseCode);
   }
   else {
-    Serial.print("Error sending IFTTT request, error code: ");
+    Serial.print("Error sending Zapier request at " getCurrentTime() + ", error code: ");
     Serial.println(httpResponseCode);
   }
   
